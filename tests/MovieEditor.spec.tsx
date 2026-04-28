@@ -1,6 +1,6 @@
 import type { Movie } from "../src/interfaces/movie";
 import { MovieEditor } from "../src/components/MovieEditor";
-import { render, screen, fireEvent, getByText } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 
 const mockMovie: Movie = {
     id: "test-id",
