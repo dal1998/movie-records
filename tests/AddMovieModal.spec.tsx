@@ -1,6 +1,7 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { AddMovieModal } from "../src/components/AddMovieModal";
+import { EditableSongList } from "../src/components/EditableSongList";
 import type { Watch } from "../src/interfaces/watch";
 
 /**
@@ -11,6 +12,60 @@ import type { Watch } from "../src/interfaces/watch";
  * - Testing callbacks and function calls
  * - Complex user workflows
  */
+
+function renderEditableSongList(songs: string[] = [], setSongs = jest.fn()) {
+    render(<EditableSongList songs={songs} setSongs={setSongs} />);
+}
+// --- Test 1: Does it render without crashing? ---
+test("renders without crashing", () => {
+    renderEditableSongList();
+});
+
+// --- Test 2: Does it show songs that are passed in? ---
+test("displays existing songs", () => {
+    renderEditableSongList(["song123", "song456"]);
+
+    expect(screen.getByDisplayValue("song123")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("song456")).toBeInTheDocument();
+});
+
+// --- Test 3: Does it show an empty state with no songs? ---
+test("renders empty list when no songs provided", () => {
+    renderEditableSongList([]);
+    // Adjust this to whatever your component shows when empty
+    expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
+});
+
+// --- Test 4: Does the "Add" button call setSongs? ---
+test("calls setSongs when a new song is added", () => {
+    const mockSetSongs = jest.fn();
+    renderEditableSongList([], mockSetSongs);
+
+    fireEvent.click(screen.getByText(/add/i)); // finds any button with "add" text
+
+    expect(mockSetSongs).toHaveBeenCalled();
+});
+
+// --- Test 5: Does removing a song call setSongs? ---
+test("calls setSongs when a song is removed", () => {
+    const mockSetSongs = jest.fn();
+    renderEditableSongList(["song123"], mockSetSongs);
+
+    fireEvent.click(screen.getByText(/❌/i)); // adjust to your remove button text
+
+    expect(mockSetSongs).toHaveBeenCalled();
+});
+
+test("editing a song input calls setSongs with updated value", () => {
+    const mockSetSongs = jest.fn();
+    renderEditableSongList(["song123"], mockSetSongs);
+
+    fireEvent.change(screen.getByDisplayValue("song123"), {
+        target: { value: "newSongId" },
+    });
+
+    expect(mockSetSongs).toHaveBeenCalledWith(["newSongId"]);
+});
 
 describe("AddMovieModal Component", () => {
     const mockHandleClose = jest.fn();
